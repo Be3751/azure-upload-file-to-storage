@@ -26,6 +26,7 @@ type ListResponse = {
 
 function App() {
   const containerName = `upload`;
+  const [inputValidMsg, setInputValidMsg] = useState<string>('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [sasTokenUrl, setSasTokenUrl] = useState<string>('');
   const [uploadStatus, setUploadStatus] = useState<string>('');
@@ -41,6 +42,14 @@ function App() {
       target?.files[0] === null
     )
       return;
+    
+    if (
+      !target?.files[0].name.endsWith('.xlsx') &&
+      !target?.files[0].name.endsWith('.json')
+    ) {
+      setInputValidMsg('Only Excel (.xlsx) and JSON files are allowed.');
+      return;
+    }
 
     setSelectedFile(target?.files[0]);
 
@@ -145,6 +154,11 @@ function App() {
               Select File
               <input type="file" hidden onChange={handleFileSelection} />
             </Button>
+            {inputValidMsg && (
+              <Box my={2}>
+                <Typography variant="body2" color="red">{inputValidMsg}</Typography>
+              </Box>
+            )}
             {selectedFile && selectedFile.name && (
               <Box my={2}>
                 <Typography variant="body2">{selectedFile.name}</Typography>
