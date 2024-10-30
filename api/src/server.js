@@ -30,8 +30,8 @@ const create = async () => {
 
     app.post('/api/upload', upload.single('file'), (req, res) => {
         const file = req.file;
-        const filename = req.file.originalname;
-      
+        const filename = decodeURIComponent(req.file.originalname);
+
         if (!file) {
           return res.status(400).send('No file uploaded.');
         }

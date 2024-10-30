@@ -69,7 +69,8 @@ function App() {
         }
         
         const form = new FormData();
-        form.append('file', selectedFile as File);
+        const encodedFilename = encodeURIComponent(selectedFile?.name || '');
+        form.append('file', selectedFile as File, encodedFilename);
         request.post(`/api/upload`, form, {
           headers: {
             'Content-Type': 'multipart/form-data'
