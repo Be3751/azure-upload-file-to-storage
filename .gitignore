@@ -414,3 +414,5 @@ FodyWeavers.xsd
 
 # Application Artifacts
 **/*.zip
+api/public
+app/dist

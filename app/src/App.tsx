@@ -101,7 +101,7 @@ function App() {
         <Box m={4}>
           {/* App Title */}
           <Typography variant="h4" gutterBottom>
-            Upload file to Azure Storage
+            Upload file (Excel or JSON) to Azure Storage
           </Typography>
           <Typography variant="h5" gutterBottom>
             with Managed ID

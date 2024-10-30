@@ -16,13 +16,22 @@ const create = async () => {
     const app = express();
     app.use(favicon(path.join(__dirname, '../public', 'favicon.ico')));
 
+    app.use(express.static(path.join(__dirname, 'public')));
+    app.use('/assets', express.static(path.join(__dirname, 'public/assets')));
+
     // CORS middleware
     app.use(cors());
     
     // Log request
     app.use(utils.appLogger);
 
-    // root route - serve static file
+    // serve static files
+    app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../public/index.html')));
+    app.get('/assets/*', (req, res) => {
+        res.sendFile(path.join(__dirname, '../public', req.url));
+    });
+
+    // API routes
     app.get('/api/hello', (req, res) => {
         res.json({hello: 'goodbye'});
         res.end();
@@ -52,9 +61,6 @@ const create = async () => {
         });
         
     });
-
-    // root route - serve static file
-    app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../public/client.html')));
 
     // Catch errors
     app.use(utils.logErrors);
