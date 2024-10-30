@@ -1,5 +1,4 @@
-import { BlockBlobClient } from '@azure/storage-blob';
-import { Box, Button, Card, Grid, Typography } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import { ChangeEvent, useState } from 'react';
 import ErrorBoundary from './components/error-boundary';
 import { convertFileToArrayBuffer } from './lib/convert-file-to-arraybuffer';
@@ -17,22 +16,18 @@ const request = axios.create({
   }
 });
 
-type SasResponse = {
-  url: string;
-};
-type ListResponse = {
-  list: string[];
-};
+const maxUploadBytes = 256000*1000;
 
 function App() {
   const containerName = `upload`;
   const [inputValidMsg, setInputValidMsg] = useState<string>('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [sasTokenUrl, setSasTokenUrl] = useState<string>('');
   const [uploadStatus, setUploadStatus] = useState<string>('');
-  const [list, setList] = useState<string[]>([]);
 
   const handleFileSelection = (event: ChangeEvent<HTMLInputElement>) => {
+    // reset
+    setUploadStatus('');
+
     const { target } = event;
 
     if (!(target instanceof HTMLInputElement)) return;
@@ -52,79 +47,51 @@ function App() {
     }
 
     setSelectedFile(target?.files[0]);
-
-    // reset
-    setSasTokenUrl('');
-    setUploadStatus('');
-  };
-
-  const handleFileSasToken = () => {
-    const permission = 'w'; //write
-    const timerange = 5; //minutes
-
-    if (!selectedFile) return;
-
-    request
-      .post(
-        `/api/sas?file=${encodeURIComponent(
-          selectedFile.name
-        )}&permission=${permission}&container=${containerName}&timerange=${timerange}`,
-        {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      )
-      .then((result: AxiosResponse<SasResponse>) => {
-        const { data } = result;
-        const { url } = data;
-        setSasTokenUrl(url);
-      })
-      .catch((error: unknown) => {
-        if (error instanceof Error) {
-          const { message, stack } = error;
-          setSasTokenUrl(`Error getting sas token: ${message} ${stack || ''}`);
-        } else {
-          setUploadStatus(error as string);
-        }
-      });
   };
 
   const handleFileUpload = () => {
-    if (sasTokenUrl === '') return;
-
+    // setUploadStatus('Now uploading');
+    let dots = '';
+    const interval = setInterval(() => {
+      dots += '.';
+      setUploadStatus(`Now uploading${dots}`);
+    }, 500);
+    
     convertFileToArrayBuffer(selectedFile as File)
       .then((fileArrayBuffer) => {
         if (
           fileArrayBuffer === null ||
           fileArrayBuffer.byteLength < 1 ||
-          fileArrayBuffer.byteLength > 256000
-        )
+          fileArrayBuffer.byteLength > maxUploadBytes
+        ) {
+          setUploadStatus('File is empty or too large');
           return;
-
-        const blockBlobClient = new BlockBlobClient(sasTokenUrl);
-        return blockBlobClient.uploadData(fileArrayBuffer);
-      })
-      .then(() => {
-        setUploadStatus('Successfully finished upload');
-        return request.get(`/api/list?container=${containerName}`);
-      })
-      .then((result: AxiosResponse<ListResponse>) => {
-        // Axios response
-        const { data } = result;
-        const { list } = data;
-        setList(list);
+        }
+        
+        const form = new FormData();
+        form.append('file', selectedFile as File);
+        request.post(`/api/upload`, form, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }).then((response: AxiosResponse) => {
+          if (response.status === 200) {
+            clearInterval(interval);
+            setUploadStatus('Successfully uploaded file to Azure Storage');
+          }
+        });
       })
       .catch((error: unknown) => {
         if (error instanceof Error) {
           const { message, stack } = error;
+          clearInterval(interval);
           setUploadStatus(
             `Failed to finish upload with error : ${message} ${stack || ''}`
           );
         } else {
           setUploadStatus(error as string);
         }
-      });
+      })
   };
 
   return (
@@ -136,10 +103,10 @@ function App() {
             Upload file to Azure Storage
           </Typography>
           <Typography variant="h5" gutterBottom>
-            with SAS token
+            with Managed ID
           </Typography>
           <Typography variant="body1" gutterBottom>
-            <b>Container: {containerName}</b>
+            <b>Target Container: {containerName}</b>
           </Typography>
 
           {/* File Selection Section */}
@@ -166,60 +133,25 @@ function App() {
             )}
           </Box>
 
-          {/* SAS Token Section */}
-          {selectedFile && selectedFile.name && (
-            <Box
-              display="block"
-              justifyContent="left"
-              alignItems="left"
-              flexDirection="column"
-              my={4}
-            >
-              <Button variant="contained" onClick={handleFileSasToken}>
-                Get SAS Token
-              </Button>
-              {sasTokenUrl && (
-                <Box my={2}>
-                  <Typography variant="body2">{sasTokenUrl}</Typography>
-                </Box>
-              )}
-            </Box>
-          )}
-
           {/* File Upload Section */}
-          {sasTokenUrl && (
-            <Box
-              display="block"
-              justifyContent="left"
-              alignItems="left"
-              flexDirection="column"
-              my={4}
-            >
-              <Button variant="contained" onClick={handleFileUpload}>
-                Upload
-              </Button>
-              {uploadStatus && (
-                <Box my={2}>
-                  <Typography variant="body2" gutterBottom>
-                    {uploadStatus}
-                  </Typography>
-                </Box>
-              )}
-            </Box>
-          )}
-
-          {/* Uploaded Files Display */}
-          <Grid container spacing={2}>
-            {list.map((item) => (
-              <Grid item xs={6} sm={4} md={3} key={item}>
-                <Card>
-                  <Typography variant="body1" gutterBottom>
-                    {item}
-                  </Typography>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
+          <Box
+            display="block"
+            justifyContent="left"
+            alignItems="left"
+            flexDirection="column"
+            my={4}
+          >
+            <Button variant="contained" onClick={handleFileUpload}>
+              Upload
+            </Button>
+            {uploadStatus && (
+              <Box my={2}>
+                <Typography variant="body2" gutterBottom>
+                  {uploadStatus}
+                </Typography>
+              </Box>
+            )}
+          </Box>
         </Box>
       </ErrorBoundary>
     </>
