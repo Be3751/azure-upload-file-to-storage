@@ -1,51 +1,46 @@
-# Azure Functions V4 app to upload file to Azure Storage
+---
+page_type: sample
+languages:
+- javascript
+- nodejs
+name: "JavaScript end-to-end Express.js server"
+description: "This project is used instead of the previous express-generator."
+products:
+- azure
+- vs-code
+---
 
-Upload a file to Azure Storage using Azure Functions V4 and the Azure SDK package for Azure Storage.
+# JavaScript end-to-end client file upload to Azure Storage Blobs
 
-1. Upload file to HTTP endpoint.
-1. File is saved to Azure Storage. 
-1. Read-only SAS token is generated for the file. 
-1. Read-only URL including SAS token is returned to the client.
+This is a basic Express.js server used for JS Dev Experience documentation, in place of the previously used express generator. 
 
-## Prerequisite
+1. Clone repo.
 
-You need an Azure Storage account created and ready for Azure Functions.
-
-## Environment variables
-
-The app needs the following environment variables. These should be available in the `local.settings.json` while developing locally. 
-
-```
-"AzureWebJobsStorage": "<STORAGE-CONNECTION-STRING>",
-"FUNCTIONS_WORKER_RUNTIME": "node",
-"AzureWebJobsFeatureFlags": "EnableWorkerIndexing",
-"Azure_Storage_AccountName": "<STORAGE-ACCOUNT-NAME>",
-"Azure_Storage_AccountKey":"<STORAGE-ACCOUNT-KEY>"
-```
-
-## Clone, install and run locally
-
-1. In a new folder, use the following commands to get source code for this project. 
-
-    ```bash
-    git init
-    git remote add origin https://github.com/azure-samples/azure-typescript-e2e-apps
-    git config core.sparseCheckout true
-    git sparse-checkout set api-functions-v4-upload-file
-    git pull origin main
-    git sparse-checkout disable
-    ```
-
-2. Install the dependencies.
+1. Install dependencies: 
 
     ```bash
     npm install
     ```
 
-## Call function
+1. Configure environment variable name for port in `./src/index.js`.
 
-Use the following cURL command, provided in [`upload-text-file.sh`](upload-text-file.sh) to automate your file uploads during development.
+    * Azure App Service on Linux: process.env.WEB_PORT
+    * Azure App Service on Windows native: process.env.PORT
 
-```bash
-curl --location 'http://localhost:7071/api/upload' -F "file=@test-file.txt" --form 'name="tom"' --verbose
-```
+1. Start project: 
+
+    ```bash
+    npm start
+    ```
+
+## Contributions
+
+* Legal files: If your PR removes the legal files, you PR will be closed. 
+* Azure Pipelines: Azure pipeline example files should be put in the `azure-pipelines` directory. The file name should indicate the type of pipeline. That should be the only file in your PR or it will be closed. 
+
+
+## Resources 
+
+* [Dev Containers](docs/devcontainer.md)
+* [Sample: App Service full stack with Authentication](https://github.com/azure-samples/js-e2e-web-app-easy-auth-app-to-app)
+* [Samples: Azure TypeScript end to end](https://github.com/azure-samples/azure-typescript-e2e-apps)
