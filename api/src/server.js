@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
-const stream = require('stream');
+const cors = require('cors');
 const favicon = require('serve-favicon');
 const path = require('path');
 const utils = require('./utils');
@@ -15,6 +15,9 @@ const create = async () => {
     // server
     const app = express();
     app.use(favicon(path.join(__dirname, '../public', 'favicon.ico')));
+
+    // CORS middleware
+    app.use(cors());
     
     // Log request
     app.use(utils.appLogger);
@@ -24,9 +27,6 @@ const create = async () => {
         res.json({hello: 'goodbye'});
         res.end();
     });
-
-    // root route - serve static file
-    app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../public/client.html')));
 
     app.post('/api/upload', upload.single('file'), (req, res) => {
         const file = req.file;
@@ -52,6 +52,9 @@ const create = async () => {
         });
         
     });
+
+    // root route - serve static file
+    app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../public/client.html')));
 
     // Catch errors
     app.use(utils.logErrors);
