@@ -411,3 +411,6 @@ FodyWeavers.xsd
 
 .DS_Store
 **/.DS_Store
+
+# Application Artifacts
+**/*.zip
