@@ -416,3 +416,6 @@ FodyWeavers.xsd
 **/*.zip
 api/public
 app/dist
+
+# Local Test Results
+api/coverage
