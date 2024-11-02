@@ -1,7 +1,7 @@
 const DefaultAzureCredential = require('@azure/identity').DefaultAzureCredential;
 const BlobServiceClient = require('@azure/storage-blob').BlobServiceClient;
 
-defaultAzureCredential = new DefaultAzureCredential();
+const defaultAzureCredential = new DefaultAzureCredential();
 
 async function uploadBlob(accountName, containerName, blobName, blobContents) {
   const blobServiceClient = new BlobServiceClient(
