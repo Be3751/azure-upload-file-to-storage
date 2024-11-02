@@ -419,3 +419,4 @@ app/dist
 
 # Local Test Results
 api/coverage
+.azure
