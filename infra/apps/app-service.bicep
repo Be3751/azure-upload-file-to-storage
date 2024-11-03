@@ -1,6 +1,9 @@
 param location string = resourceGroup().location
 param name string
+@secure()
 param appServicePlanId string
+param strageAccountName string
+param containerName string
 
 resource appService 'Microsoft.Web/sites@2023-12-01' = {
   name: name
@@ -15,98 +18,49 @@ resource appService 'Microsoft.Web/sites@2023-12-01' = {
   properties: {
     enabled: true
     serverFarmId: appServicePlanId
+    reserved: true
     siteConfig: {
       numberOfWorkers: 1
-      linuxFxVersion: 'NODE|20LTS'
+      linuxFxVersion: 'NODE|20-lts'
       acrUseManagedIdentityCreds: false
       alwaysOn: false
       http20Enabled: false
       functionAppScaleLimit: 0
       minimumElasticInstanceCount: 1
+      appSettings: [
+        {
+          name: 'AZURE_STORAGE_ACCOUNT_NAME'
+          value: strageAccountName
+        }
+        {
+          name: 'AZURE_STORAGE_CONTAINER_NAME'
+          value: containerName
+        }
+        // To run `npm install` during deployment 
+        {
+          name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
+          value: 'true'
+        }
+      ]
     }
+    httpsOnly: true
     keyVaultReferenceIdentity: 'SystemAssigned'
   }
 }
 
+resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
+  name: strageAccountName
+}
+
+var roleDefinitionResourceId = '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/ba92f5b4-2d11-453d-a403-e96b0029c9fe'
+resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(subscription().subscriptionId, appService.name, roleDefinitionResourceId)
+  scope: storageAccount
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')
+    principalId: appService.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 output principalId string = appService.identity.principalId
-
-// TODO: 環境変数を設定する
-
-// resource name_web 'Microsoft.Web/sites/config@2023-12-01' = {
-//   parent: name_resource
-//   name: 'web'
-//   location: 'Japan East'
-//   properties: {
-//     numberOfWorkers: 1
-//     defaultDocuments: [
-//       'Default.htm'
-//       'Default.html'
-//       'Default.asp'
-//       'index.htm'
-//       'index.html'
-//       'iisstart.htm'
-//       'default.aspx'
-//       'index.php'
-//       'hostingstart.html'
-//     ]
-//     netFrameworkVersion: 'v4.0'
-//     linuxFxVersion: 'NODE|20LTS'
-//     requestTracingEnabled: false
-//     remoteDebuggingEnabled: false
-//     remoteDebuggingVersion: 'VS2022'
-//     httpLoggingEnabled: false
-//     acrUseManagedIdentityCreds: false
-//     logsDirectorySizeLimit: 35
-//     detailedErrorLoggingEnabled: false
-//     publishingUsername: 'REDACTED'
-//     scmType: 'None'
-//     use32BitWorkerProcess: true
-//     webSocketsEnabled: false
-//     alwaysOn: false
-//     managedPipelineMode: 'Integrated'
-//     virtualApplications: [
-//       {
-//         virtualPath: '/'
-//         physicalPath: 'site\\wwwroot'
-//         preloadEnabled: false
-//       }
-//     ]
-//     loadBalancing: 'LeastRequests'
-//     experiments: {
-//       rampUpRules: []
-//     }
-//     autoHealEnabled: false
-//     vnetRouteAllEnabled: false
-//     vnetPrivatePortsCount: 0
-//     localMySqlEnabled: false
-//     managedServiceIdentityId: 8490
-//     ipSecurityRestrictions: [
-//       {
-//         ipAddress: 'Any'
-//         action: 'Allow'
-//         priority: 2147483647
-//         name: 'Allow all'
-//         description: 'Allow all access'
-//       }
-//     ]
-//     scmIpSecurityRestrictions: [
-//       {
-//         ipAddress: 'Any'
-//         action: 'Allow'
-//         priority: 2147483647
-//         name: 'Allow all'
-//         description: 'Allow all access'
-//       }
-//     ]
-//     scmIpSecurityRestrictionsUseMain: false
-//     http20Enabled: false
-//     minTlsVersion: '1.2'
-//     scmMinTlsVersion: '1.2'
-//     ftpsState: 'FtpsOnly'
-//     preWarmedInstanceCount: 0
-//     elasticWebAppScaleLimit: 0
-//     functionsRuntimeScaleMonitoringEnabled: false
-//     minimumElasticInstanceCount: 1
-//     azureStorageAccounts: {}
-//   }
-// }

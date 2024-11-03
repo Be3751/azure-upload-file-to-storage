@@ -25,7 +25,12 @@ module appService 'apps/app-service.bicep' = {
     location: location
     name: '${abbrs.webSitesAppService}${uniqueServiceName}'
     appServicePlanId: appServicePlan.outputs.appServicePlanId
+    strageAccountName: storage.outputs.accountName
+    containerName: storage.outputs.containerName
   }
+  dependsOn: [
+    storage
+  ]
 }
 
 module appServicePlan 'modules/app-service-plan.bicep' = {
@@ -44,6 +49,5 @@ module storage 'modules/storage.bicep' = {
     location: location
     name: '${abbrs.storageStorageAccounts}${uniqueServiceName}'
     sku: 'Standard_LRS'
-    appServicePrincipalId: appService.outputs.principalId
   }
 }
