@@ -29,6 +29,10 @@ resource appService 'Microsoft.Web/sites@2023-12-01' = {
       minimumElasticInstanceCount: 1
       appSettings: [
         {
+          name: 'VITE_API_SERVER'
+          value: 'https://${name}.azurewebsites.net'
+        }
+        {
           name: 'AZURE_STORAGE_ACCOUNT_NAME'
           value: strageAccountName
         }
