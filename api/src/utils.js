@@ -13,13 +13,6 @@ const binaryParser = (res, callback) => {
     callback(null, Buffer.from(res.data, 'binary'));
   });
 };
-// ignore request for FavIcon. so there is no error in browser
-const ignoreFavicon = (req, res, next) => {
-  if (req.originalUrl.includes('favicon.ico')) {
-    res.status(204).end();
-  }
-  next();
-};
 const appLogger = (req, res, next) => {
   const srcIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
   const {method} = req;
@@ -51,7 +44,6 @@ const errorHandler = (err, req, res) => {
 module.exports = {
   timeStamp,
   binaryParser,
-  ignoreFavicon,
   appLogger,
   logErrors,
   clientError500Handler,

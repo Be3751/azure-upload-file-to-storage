@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
-const favicon = require('serve-favicon');
 const path = require('path');
 const utils = require('./utils');
 const { uploadBlob } = require('./lib/azure-storage');
@@ -14,7 +13,6 @@ const create = async () => {
 
     // server
     const app = express();
-    app.use(favicon(path.join(__dirname, '../public', 'favicon.ico')));
 
     app.use(express.static(path.join(__dirname, 'public')));
     app.use('/assets', express.static(path.join(__dirname, 'public/assets')));
