@@ -3,7 +3,7 @@ read -p "Enter the App Service name: " appServiceName
 
 # for frontend
 cd ../app
-npm run build
+VITE_API_SERVER=https://$appServiceName.azurewebsites.net npm run build
 rm -r ../api/public/*
 cp -r dist/* ../api/public
 
