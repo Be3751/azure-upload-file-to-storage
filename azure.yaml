@@ -3,6 +3,14 @@
 name: azure-upload-file-to-storage
 metadata:
     template: azd-init@1.10.3
+hooks:
+  predeploy:
+    shell: sh
+    continueOnError: false
+    interactive: false
+    run: |
+        cd app && npm run build
+        cp -r dist/* ../api/public/
 services:
   api:
     project: api

@@ -40,6 +40,8 @@ function App() {
     
     if (
       !target?.files[0].name.endsWith('.xlsx') &&
+      !target?.files[0].name.endsWith('.docx') &&
+      !target?.files[0].name.endsWith('.pdf') &&
       !target?.files[0].name.endsWith('.json')
     ) {
       setInputValidMsg('Only Excel (.xlsx) and JSON files are allowed.');
